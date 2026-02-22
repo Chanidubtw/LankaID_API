@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Lanka NIC API — Sri Lankan Identity Validation for Businesses</title>
+<title>LankaID — Sri Lankan Identity Validation for Businesses</title>
 <meta name="description" content="Production-ready REST API to validate and verify Sri Lankan NIC numbers. Built for Sri Lankan businesses."/>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,700;1,500;1,700&family=Syne:wght@400;500;700&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet"/>
 <style>
@@ -216,7 +216,9 @@ footer{position:relative;z-index:1;border-top:1px solid var(--border);padding:56
 @media(max-width:900px){
   nav{padding:0 20px}
   .nav-links{display:none}
-  .nav-cta .btn-outline{display:none}
+  .nav-cta .btn-outline{display:inline-flex}
+  .nav-cta{gap:8px}
+  .nav-cta .btn-outline{padding:8px 14px;font-size:12px}
   .hero{grid-template-columns:1fr;padding:110px 24px 60px;gap:32px}
   .nic-card{display:none}
   .hero-stats{flex-wrap:wrap;gap:20px}
@@ -239,6 +241,7 @@ footer{position:relative;z-index:1;border-top:1px solid var(--border);padding:56
   nav{padding:0 16px;height:60px}
   .logo{font-size:15px}
   .logo-icon{width:26px;height:26px;font-size:12px}
+  .nav-cta .btn-outline{padding:7px 12px;font-size:11px}
   .btn-gold{padding:8px 16px;font-size:12px}
   .hero{padding:90px 16px 50px}
   h1{font-size:34px;letter-spacing:-0.01em}
@@ -333,7 +336,7 @@ footer{position:relative;z-index:1;border-top:1px solid var(--border);padding:56
 
 <!-- NAV -->
 <nav>
-  <a class="logo" href="#"><div class="logo-icon">🦁</div>Lanka NIC API</a>
+  <a class="logo" href="#"><div class="logo-icon">🦁</div>LankaID</a>
   <div class="nav-links">
     <a class="nav-link" href="#features">Features</a>
     <a class="nav-link" href="#docs">Documentation</a>
@@ -758,7 +761,7 @@ s = res.<span class="fn">json</span>()
 <footer>
   <div class="footer-inner">
     <div class="footer-brand">
-      <a class="logo" href="#"><div class="logo-icon">🦁</div>Lanka NIC API</a>
+      <a class="logo" href="#"><div class="logo-icon">🦁</div>LankaID</a>
       <p>Production-ready NIC validation for Sri Lankan businesses. Simple, fast, and reliable.</p>
     </div>
     <div class="footer-col">
@@ -778,7 +781,7 @@ s = res.<span class="fn">json</span>()
     </div>
   </div>
   <div class="footer-bottom">
-    <p>© 2025 Lanka NIC API · Built in Sri Lanka 🇱🇰</p>
+    <p>© 2025 LankaID · Built in Sri Lanka 🇱🇰</p>
     <p>All rights reserved.</p>
   </div>
 </footer>

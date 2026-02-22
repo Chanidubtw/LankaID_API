@@ -1,4 +1,4 @@
-# 🇱🇰 Lanka NIC API
+# 🇱🇰 LankaID
 
 A production-ready REST API to validate Sri Lankan National Identity Card (NIC) numbers.
 Supports both old (9-digit + V/X) and new (12-digit) formats.

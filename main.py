@@ -21,7 +21,7 @@ FREE_TIER_LIMIT = 200
 limiter = Limiter(key_func=get_remote_address)
 
 app = FastAPI(
-    title="Lanka NIC API",
+    title="LankaID",
     description="""
 ## 🇱🇰 Sri Lankan NIC Validation API
 
@@ -44,7 +44,7 @@ Validate and extract information from Sri Lankan National Identity Card (NIC) nu
     """,
     version="1.0.0",
     contact={
-        "name": "Lanka NIC API",
+        "name": "LankaID",
         "email": "support@lankanicapi.lk",
     },
 )
