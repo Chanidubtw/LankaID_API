@@ -141,10 +141,10 @@ footer a{color:var(--gold);text-decoration:none}
 <nav>
   <a class="nav-logo" href="/">🦁 LankaID</a>
   <div class="nav-tabs">
-    <button class="nav-tab active" onclick="setTab('validate')">Validate</button>
+    <button class="nav-tab" onclick="setTab('validate')">Validate</button>
     <button class="nav-tab" onclick="setTab('gender')">Gender</button>
     <button class="nav-tab" onclick="setTab('verify')">Verify</button>
-    <button class="nav-tab" onclick="setTab('register')">Register</button>
+    <button class="nav-tab active" onclick="setTab('register')">Register</button>
   </div>
   <a class="nav-back" href="/">← Home</a>
 </nav>
@@ -159,7 +159,7 @@ footer a{color:var(--gold);text-decoration:none}
   <div class="panels">
 
     <!-- REGISTER -->
-    <div class="panel" id="panel-register">
+    <div class="panel open" id="panel-register">
       <div class="panel-header" onclick="togglePanel('register')">
         <span class="panel-num">01</span>
         <span class="panel-title">Get your API Key</span>
@@ -177,7 +177,7 @@ footer a{color:var(--gold);text-decoration:none}
     </div>
 
     <!-- VALIDATE -->
-    <div class="panel open" id="panel-validate">
+    <div class="panel" id="panel-validate">
       <div class="panel-header" onclick="togglePanel('validate')">
         <span class="panel-num">02</span>
         <span class="panel-title">Validate NIC</span>
