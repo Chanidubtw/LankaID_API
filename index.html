@@ -1,0 +1,779 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Lanka NIC API — Sri Lankan Identity Validation for Businesses</title>
+<meta name="description" content="Production-ready REST API to validate and verify Sri Lankan NIC numbers. Built for Sri Lankan businesses."/>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,700;1,500;1,700&family=Syne:wght@400;500;700&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --gold:#C9A84C;--gold-l:#E8C97A;--gold-dim:rgba(201,168,76,0.12);--gold-border:rgba(201,168,76,0.25);
+  --bg:#0B0B0B;--bg2:#111;--bg3:#191919;--border:rgba(255,255,255,0.07);--border2:rgba(255,255,255,0.04);
+  --text:#EDE8DF;--muted:#6B6459;--muted2:#8A8070;
+  --green:#4BB87A;--red:#CF4444;--blue:#5B9BD5;--r:6px;
+}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;font-weight:400;overflow-x:hidden}
+.bg-layer{position:fixed;inset:0;pointer-events:none;z-index:0;
+  background:radial-gradient(ellipse 90% 50% at 50% -5%,rgba(139,26,26,0.1) 0%,transparent 65%),
+    radial-gradient(ellipse 50% 60% at 95% 80%,rgba(201,168,76,0.05) 0%,transparent 55%)}
+
+/* NAV */
+nav{position:fixed;top:0;left:0;right:0;height:68px;display:flex;align-items:center;justify-content:space-between;padding:0 56px;background:rgba(11,11,11,0.9);backdrop-filter:blur(24px);border-bottom:1px solid var(--border);z-index:200}
+.logo{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--gold);font-family:'Playfair Display',serif;font-size:17px;letter-spacing:0.02em}
+.logo-icon{width:30px;height:30px;border:1.5px solid var(--gold);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px}
+.nav-links{display:flex;gap:2px}
+.nav-link{padding:7px 16px;color:var(--muted2);font-size:13px;font-weight:500;letter-spacing:0.04em;text-decoration:none;border-radius:var(--r);transition:color 0.2s}
+.nav-link:hover,.nav-link.active{color:var(--gold-l)}
+.nav-cta{display:flex;align-items:center;gap:12px}
+.btn-outline{padding:9px 22px;border:1px solid var(--gold-border);color:var(--gold);background:none;border-radius:var(--r);font-family:'Syne',sans-serif;font-size:13px;font-weight:500;cursor:pointer;text-decoration:none;transition:all 0.2s}
+.btn-outline:hover{background:var(--gold-dim);border-color:var(--gold)}
+.btn-gold{padding:9px 24px;background:var(--gold);color:#0B0B0B;border:none;border-radius:var(--r);font-family:'Syne',sans-serif;font-size:13px;font-weight:700;letter-spacing:0.05em;cursor:pointer;text-decoration:none;transition:all 0.2s;display:inline-flex;align-items:center;gap:8px}
+.btn-gold:hover{background:var(--gold-l);transform:translateY(-1px)}
+
+/* HERO */
+.hero{position:relative;z-index:1;padding:160px 56px 100px;max-width:1200px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;gap:80px;align-items:center}
+.hero-badge{display:inline-flex;align-items:center;gap:8px;background:var(--gold-dim);border:1px solid var(--gold-border);color:var(--gold);font-size:11px;font-family:'DM Mono',monospace;letter-spacing:0.12em;text-transform:uppercase;padding:6px 14px;border-radius:100px;margin-bottom:32px}
+.pulse{width:6px;height:6px;background:var(--green);border-radius:50%;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1;box-shadow:0 0 0 0 rgba(75,184,122,0.4)}50%{opacity:.7;box-shadow:0 0 0 5px transparent}}
+h1{font-family:'Playfair Display',serif;font-size:clamp(38px,4.5vw,60px);line-height:1.06;letter-spacing:-0.02em;font-weight:700;margin-bottom:24px}
+h1 em{font-style:italic;color:var(--gold)}
+.hero-sub{font-size:15px;color:var(--muted2);line-height:1.8;margin-bottom:48px;max-width:440px}
+.hero-actions{display:flex;gap:12px;flex-wrap:wrap}
+.btn-lg{padding:14px 32px;font-size:14px}
+.hero-stats{display:flex;gap:32px;margin-top:48px;padding-top:40px;border-top:1px solid var(--border)}
+.stat-item .val{font-family:'Playfair Display',serif;font-size:26px;color:var(--gold)}
+.stat-item .lbl{font-size:11px;font-family:'DM Mono',monospace;color:var(--muted);text-transform:uppercase;letter-spacing:0.1em;margin-top:2px}
+
+/* NIC CARD */
+.nic-card{background:var(--bg2);border:1px solid var(--gold-border);border-radius:12px;padding:32px;position:relative;overflow:hidden}
+.nic-card::before{content:'';position:absolute;top:-40px;right:-40px;width:160px;height:160px;background:radial-gradient(circle,rgba(201,168,76,0.08) 0%,transparent 70%);pointer-events:none}
+.nic-card-label{font-size:10px;font-family:'DM Mono',monospace;letter-spacing:0.14em;text-transform:uppercase;color:var(--muted);margin-bottom:10px}
+.nic-number{font-family:'DM Mono',monospace;font-size:22px;color:var(--gold-l);letter-spacing:0.08em;margin-bottom:28px}
+.nic-fields{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--border2);border:1px solid var(--border2);border-radius:4px;overflow:hidden;margin-bottom:20px}
+.nic-field{background:var(--bg3);padding:14px 16px}
+.nic-field-l{font-size:9px;font-family:'DM Mono',monospace;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted);margin-bottom:5px}
+.nic-field-v{font-size:15px;font-weight:500}
+.nic-field-v.gold{color:var(--gold)}
+.nic-valid{display:inline-flex;align-items:center;gap:8px;background:rgba(75,184,122,0.1);border:1px solid rgba(75,184,122,0.25);color:var(--green);font-size:12px;font-family:'DM Mono',monospace;padding:6px 14px;border-radius:100px}
+.response-time{position:absolute;top:20px;right:20px;font-size:10px;font-family:'DM Mono',monospace;color:var(--muted);background:var(--bg3);border:1px solid var(--border);padding:4px 10px;border-radius:100px}
+
+/* SECTIONS */
+section{position:relative;z-index:1}
+.section-inner{max-width:1200px;margin:0 auto;padding:100px 56px}
+.section-tag{display:inline-flex;align-items:center;gap:6px;font-size:10px;font-family:'DM Mono',monospace;letter-spacing:0.14em;text-transform:uppercase;color:var(--gold);margin-bottom:20px}
+.section-tag::before{content:'';display:block;width:24px;height:1px;background:var(--gold)}
+h2{font-family:'Playfair Display',serif;font-size:clamp(30px,4vw,46px);font-weight:700;line-height:1.1;letter-spacing:-0.02em;margin-bottom:16px}
+h2 em{font-style:italic;color:var(--gold)}
+.section-sub{font-size:15px;color:var(--muted2);line-height:1.75;max-width:520px}
+
+/* FEATURES */
+.features-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--border2);border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-top:64px}
+.feat{background:var(--bg2);padding:36px;transition:background 0.2s}
+.feat:hover{background:var(--bg3)}
+.feat-icon{width:40px;height:40px;background:var(--gold-dim);border:1px solid var(--gold-border);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px;margin-bottom:24px}
+.feat h3{font-size:15px;font-weight:700;margin-bottom:10px}
+.feat p{font-size:13px;color:var(--muted2);line-height:1.7;font-weight:400}
+
+/* DOCS */
+.docs-section{background:var(--bg2);border-top:1px solid var(--border);border-bottom:1px solid var(--border)}
+.endpoints-list{display:flex;flex-direction:column;margin-top:64px;border:1px solid var(--border);border-radius:10px;overflow:hidden}
+.endpoint{border-bottom:1px solid var(--border)}
+.endpoint:last-child{border-bottom:none}
+.endpoint-header{display:flex;align-items:center;gap:16px;padding:22px 28px;cursor:pointer;transition:background 0.2s;user-select:none}
+.endpoint-header:hover{background:var(--bg3)}
+.method{font-family:'DM Mono',monospace;font-size:11px;font-weight:500;letter-spacing:0.08em;padding:4px 10px;border-radius:4px;min-width:52px;text-align:center}
+.method.post{background:rgba(201,168,76,0.12);color:var(--gold);border:1px solid var(--gold-border)}
+.method.get{background:rgba(91,155,213,0.12);color:var(--blue);border:1px solid rgba(91,155,213,0.3)}
+.endpoint-path{font-family:'DM Mono',monospace;font-size:14px;flex:1}
+.endpoint-desc{font-size:12px;color:var(--muted)}
+.ep-chevron{color:var(--muted);transition:transform 0.25s}
+.endpoint.open .ep-chevron{transform:rotate(180deg)}
+.endpoint-body{display:none;padding:0 28px 28px}
+.endpoint.open .endpoint-body{display:block}
+.ep-desc-text{font-size:13px;color:var(--muted2);line-height:1.7;margin-bottom:20px;padding-top:4px}
+.params-table{width:100%;border-collapse:collapse;margin-bottom:20px;font-size:12.5px}
+.params-table th{text-align:left;padding:8px 12px;font-size:10px;font-family:'DM Mono',monospace;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);border-bottom:1px solid var(--border)}
+.params-table td{padding:10px 12px;border-bottom:1px solid var(--border2);vertical-align:top}
+.params-table td:first-child{font-family:'DM Mono',monospace;color:var(--gold-l);font-size:12px}
+.params-table td:nth-child(2){color:var(--blue);font-family:'DM Mono',monospace;font-size:11px}
+.params-table td:last-child{color:var(--muted2)}
+.req-badge{background:rgba(207,68,68,0.1);color:var(--red);font-size:9px;font-family:'DM Mono',monospace;padding:2px 7px;border-radius:100px;border:1px solid rgba(207,68,68,0.2)}
+.code-wrapper{border:1px solid var(--border);border-radius:8px;overflow:hidden;margin-top:16px}
+.code-header{display:flex;align-items:center;justify-content:space-between;background:var(--bg3);border-bottom:1px solid var(--border)}
+.code-tabs{display:flex}
+.code-tab{padding:10px 18px;background:none;border:none;color:var(--muted2);font-family:'DM Mono',monospace;font-size:12px;cursor:pointer;border-bottom:2px solid transparent;transition:color 0.2s}
+.code-tab:hover{color:var(--text)}
+.code-tab.active{color:var(--gold);border-bottom-color:var(--gold)}
+.code-panel{display:none}
+.code-panel.active{display:block}
+pre{background:var(--bg);padding:24px;font-family:'DM Mono',monospace;font-size:12.5px;line-height:1.8;overflow-x:auto;color:#c5bfb3}
+.copy-code{background:none;border:none;color:var(--muted);font-size:11px;font-family:'DM Mono',monospace;cursor:pointer;padding:10px 16px;transition:color 0.2s}
+.copy-code:hover{color:var(--gold)}
+.kw{color:#E8C97A}.str{color:#98c379}.cm{color:#555}.fn{color:#82aaff}.num{color:#f78c6c}.prop{color:#C9A84C}
+
+/* PRICING — 2 cards */
+.pricing-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px;max-width:800px;margin:64px auto 0}
+.price-card{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:40px;position:relative;transition:border-color 0.2s}
+.price-card.featured{border-color:var(--gold);background:linear-gradient(135deg,var(--bg2),#161208)}
+.plan-name{font-size:11px;font-family:'DM Mono',monospace;letter-spacing:0.14em;text-transform:uppercase;color:var(--muted);margin-bottom:20px}
+.plan-price{font-family:'Playfair Display',serif;font-size:52px;font-weight:700;line-height:1;margin-bottom:8px}
+.plan-price span{font-size:15px;font-family:'Syne',sans-serif;color:var(--muted);font-weight:400}
+.plan-desc{font-size:13px;color:var(--muted2);margin-bottom:28px;line-height:1.6}
+.plan-features{list-style:none;display:flex;flex-direction:column;gap:10px;margin-bottom:36px}
+.plan-features li{font-size:13px;color:var(--muted2);display:flex;align-items:flex-start;gap:10px;line-height:1.5}
+.plan-features li::before{content:'✓';color:var(--gold);font-size:12px;margin-top:1px;flex-shrink:0}
+.plan-features li.dim::before{content:'—';color:var(--muted)}
+.plan-features li.dim{color:var(--muted)}
+.btn-plan{display:block;width:100%;padding:13px;border-radius:var(--r);font-family:'Syne',sans-serif;font-size:13px;font-weight:700;letter-spacing:0.04em;cursor:pointer;transition:all 0.2s;text-align:center;border:1px solid var(--border);background:none;color:var(--text);text-decoration:none}
+.btn-plan:hover{border-color:var(--gold);color:var(--gold)}
+.btn-plan.featured-btn{background:var(--gold);color:#0B0B0B;border-color:var(--gold)}
+.btn-plan.featured-btn:hover{background:var(--gold-l)}
+
+/* REGISTER */
+.register-section{background:var(--bg2);border-top:1px solid var(--border)}
+.register-grid{display:grid;grid-template-columns:1fr 1fr;gap:80px;align-items:start}
+.register-perks{display:flex;flex-direction:column;gap:24px;margin-top:40px}
+.perk{display:flex;align-items:flex-start;gap:16px}
+.perk-icon{width:36px;height:36px;background:var(--gold-dim);border:1px solid var(--gold-border);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;margin-top:2px}
+.perk h4{font-size:14px;font-weight:700;margin-bottom:4px}
+.perk p{font-size:13px;color:var(--muted2);line-height:1.6}
+.reg-form{background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:36px;margin-top:40px}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.field{margin-bottom:20px}
+label{display:block;font-size:10px;font-family:'DM Mono',monospace;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
+input,select,textarea{width:100%;background:var(--bg2);border:1px solid rgba(255,255,255,0.08);border-radius:var(--r);padding:12px 16px;font-family:'Syne',sans-serif;font-size:14px;color:var(--text);outline:none;transition:border-color 0.2s;-webkit-appearance:none}
+input:focus,select:focus,textarea:focus{border-color:var(--gold)}
+input::placeholder,textarea::placeholder{color:var(--muted)}
+textarea{resize:vertical;min-height:90px;line-height:1.6}
+select{cursor:pointer;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%236B6459' d='M6 8L0 0h12z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center;padding-right:36px}
+select option{background:#191919}
+.btn-submit{width:100%;padding:14px;background:var(--gold);color:#0B0B0B;border:none;border-radius:var(--r);font-family:'Syne',sans-serif;font-size:14px;font-weight:700;letter-spacing:0.05em;cursor:pointer;transition:all 0.2s;margin-top:4px}
+.btn-submit:hover{background:var(--gold-l)}
+.btn-submit:disabled{opacity:0.6;cursor:not-allowed}
+.form-note{font-size:11px;color:var(--muted);text-align:center;margin-top:14px;font-family:'DM Mono',monospace;line-height:1.6}
+#reg-success{display:none;text-align:center;padding:8px}
+.success-icon{font-size:40px;margin-bottom:16px}
+#reg-success h4{font-size:18px;color:var(--green);margin-bottom:8px}
+#reg-success p{font-size:13px;color:var(--muted2);margin-bottom:4px}
+.key-reveal{background:var(--bg);border:1px solid var(--gold-border);border-radius:6px;padding:16px;display:flex;align-items:center;gap:12px;margin-top:14px;text-align:left}
+.key-reveal code{font-family:'DM Mono',monospace;font-size:11px;color:var(--gold);word-break:break-all;flex:1}
+.copy-btn-sm{background:none;border:1px solid var(--border);border-radius:4px;padding:6px 12px;color:var(--muted);font-size:11px;font-family:'DM Mono',monospace;cursor:pointer;white-space:nowrap;transition:all 0.2s;flex-shrink:0}
+.copy-btn-sm:hover{border-color:var(--gold);color:var(--gold)}
+
+/* FAQ */
+.faq-list{display:flex;flex-direction:column;border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-top:64px}
+.faq-item{border-bottom:1px solid var(--border)}
+.faq-item:last-child{border-bottom:none}
+.faq-q{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:22px 28px;cursor:pointer;font-size:15px;font-weight:500;transition:background 0.2s;user-select:none}
+.faq-q:hover{background:var(--bg3)}
+.faq-chevron{color:var(--gold);font-size:13px;flex-shrink:0;transition:transform 0.25s}
+.faq-item.open .faq-chevron{transform:rotate(180deg)}
+.faq-a{display:none;padding:0 28px 22px;font-size:14px;color:var(--muted2);line-height:1.8}
+.faq-item.open .faq-a{display:block;padding-top:4px}
+.faq-a code{font-family:'DM Mono',monospace;background:var(--bg3);color:var(--gold-l);padding:2px 6px;border-radius:3px;font-size:12px}
+.faq-a a{color:var(--gold);text-decoration:none}
+
+/* ENTERPRISE POPUP */
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);backdrop-filter:blur(6px);z-index:500;align-items:center;justify-content:center}
+.overlay.open{display:flex}
+.popup{background:var(--bg2);border:1px solid var(--gold-border);border-radius:14px;padding:48px;max-width:520px;width:90%;position:relative;animation:popIn 0.25s ease}
+@keyframes popIn{from{opacity:0;transform:scale(0.95)}to{opacity:1;transform:scale(1)}}
+.popup-close{position:absolute;top:16px;right:20px;background:none;border:none;color:var(--muted);font-size:20px;cursor:pointer;line-height:1;transition:color 0.2s}
+.popup-close:hover{color:var(--text)}
+.popup h3{font-family:'Playfair Display',serif;font-size:26px;font-weight:700;margin-bottom:8px}
+.popup h3 em{font-style:italic;color:var(--gold)}
+.popup-sub{font-size:13px;color:var(--muted2);margin-bottom:28px;line-height:1.6}
+.popup .field{margin-bottom:16px}
+.popup-perks{display:flex;flex-direction:column;gap:8px;margin-bottom:24px}
+.popup-perk{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--muted2)}
+.popup-perk::before{content:'✓';color:var(--gold);font-size:12px;flex-shrink:0}
+.btn-popup-submit{width:100%;padding:14px;background:var(--gold);color:#0B0B0B;border:none;border-radius:var(--r);font-family:'Syne',sans-serif;font-size:14px;font-weight:700;cursor:pointer;transition:all 0.2s}
+.btn-popup-submit:hover{background:var(--gold-l)}
+.btn-popup-submit:disabled{opacity:0.6;cursor:not-allowed}
+#popup-success{display:none;text-align:center;padding:20px 0}
+#popup-success .s-icon{font-size:48px;margin-bottom:16px}
+#popup-success h4{font-size:18px;color:var(--green);margin-bottom:8px;font-family:'Playfair Display',serif}
+#popup-success p{font-size:13px;color:var(--muted2);line-height:1.6}
+
+/* FOOTER */
+footer{position:relative;z-index:1;border-top:1px solid var(--border);padding:56px}
+.footer-inner{max-width:1200px;margin:0 auto;display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:48px}
+.footer-brand p{font-size:13px;color:var(--muted2);line-height:1.7;max-width:260px;margin-top:16px}
+.footer-col h5{font-size:10px;font-family:'DM Mono',monospace;letter-spacing:0.14em;text-transform:uppercase;color:var(--muted);margin-bottom:16px}
+.footer-col a{display:block;font-size:13px;color:var(--muted2);text-decoration:none;margin-bottom:10px;transition:color 0.2s}
+.footer-col a:hover{color:var(--gold)}
+.footer-bottom{max-width:1200px;margin:40px auto 0;padding-top:24px;border-top:1px solid var(--border);display:flex;justify-content:space-between}
+.footer-bottom p{font-size:12px;color:var(--muted);font-family:'DM Mono',monospace}
+
+/* ANIMATIONS */
+.fade-up{opacity:0;transform:translateY(20px);transition:opacity 0.6s ease,transform 0.6s ease}
+.fade-up.visible{opacity:1;transform:none}
+
+@media(max-width:900px){
+  nav{padding:0 20px}.nav-links{display:none}
+  .hero{grid-template-columns:1fr;padding:120px 24px 70px;gap:40px}.nic-card{display:none}
+  .section-inner{padding:70px 24px}
+  .features-grid{grid-template-columns:1fr}
+  .pricing-grid{grid-template-columns:1fr;max-width:100%}
+  .register-grid{grid-template-columns:1fr}.form-row{grid-template-columns:1fr}
+  footer{padding:40px 24px}.footer-inner{grid-template-columns:1fr 1fr}.footer-brand{grid-column:1/-1}
+}
+</style>
+</head>
+<body>
+<div class="bg-layer"></div>
+
+<!-- ENTERPRISE POPUP -->
+<div class="overlay" id="enterpriseOverlay" onclick="closePopup(event)">
+  <div class="popup">
+    <button class="popup-close" onclick="closePopupBtn()">✕</button>
+    <div id="popup-form-inner">
+      <h3>Talk to <em>Enterprise</em></h3>
+      <p class="popup-sub">Tell us about your business and we'll get back to you within one business day with a custom plan.</p>
+      <div class="popup-perks">
+        <div class="popup-perk">Unlimited API requests — no caps</div>
+        <div class="popup-perk">99.9% uptime SLA with financial credits</div>
+        <div class="popup-perk">Dedicated infrastructure & support</div>
+        <div class="popup-perk">On-premise deployment available</div>
+      </div>
+      <div class="field"><label>Your Name & Company</label><input type="text" id="ent-name" placeholder="Kamal Perera · ABC Bank (Pvt) Ltd"/></div>
+      <div class="field"><label>Business Email</label><input type="email" id="ent-email" placeholder="kamal@abcbank.lk"/></div>
+      <div class="field"><label>Expected Monthly Volume</label>
+        <select id="ent-volume">
+          <option value="" disabled selected>Select request volume</option>
+          <option>50,000 – 200,000 / month</option>
+          <option>200,000 – 1,000,000 / month</option>
+          <option>1,000,000+ / month</option>
+          <option>Not sure yet — need a quote</option>
+        </select>
+      </div>
+      <div class="field"><label>Brief Description</label><textarea id="ent-desc" placeholder="Describe your use case — KYC, onboarding, age verification..."></textarea></div>
+      <button class="btn-popup-submit" onclick="sendEnterprise()" id="ent-btn">Send Enquiry →</button>
+    </div>
+    <div id="popup-success">
+      <div class="s-icon">📬</div>
+      <h4>Enquiry received!</h4>
+      <p>We'll review your requirements and reach out to <span id="popup-email-confirm" style="color:var(--gold)"></span> within one business day.</p>
+    </div>
+  </div>
+</div>
+
+<!-- NAV -->
+<nav>
+  <a class="logo" href="#"><div class="logo-icon">🦁</div>Lanka NIC API</a>
+  <div class="nav-links">
+    <a class="nav-link" href="#features">Features</a>
+    <a class="nav-link" href="#docs">Documentation</a>
+    <a class="nav-link" href="#pricing">Pricing</a>
+    <a class="nav-link" href="#faq">FAQ</a>
+  </div>
+  <div class="nav-cta">
+    <a class="btn-outline" href="/dashboard">Live Demo</a>
+    <a class="btn-gold" href="#register">Get API Key →</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section>
+  <div class="hero">
+    <div class="fade-up">
+      <div class="hero-badge"><div class="pulse"></div>API v1.0 · Now Available</div>
+      <h1>NIC Validation<br/>Built for <em>Sri Lankan</em><br/>Businesses</h1>
+      <p class="hero-sub">A production-ready REST API to validate, decode, and verify Sri Lankan National Identity Card numbers. Integrate KYC, onboarding, and gender verification in minutes.</p>
+      <div class="hero-actions">
+        <a class="btn-gold btn-lg" href="#register">Get API Key — It's Free →</a>
+        <a class="btn-outline btn-lg" href="#docs">View Docs</a>
+      </div>
+      <div class="hero-stats">
+        <div class="stat-item"><div class="val">3</div><div class="lbl">Endpoints</div></div>
+        <div class="stat-item"><div class="val">&lt;20ms</div><div class="lbl">Response Time</div></div>
+        <div class="stat-item"><div class="val">99.9%</div><div class="lbl">Uptime SLA</div></div>
+        <div class="stat-item"><div class="val">Free</div><div class="lbl">To Start</div></div>
+      </div>
+    </div>
+    <div class="fade-up" style="transition-delay:0.15s">
+      <div class="nic-card">
+        <div class="response-time">⚡ 11ms</div>
+        <div class="nic-card-label">POST /validate · Response</div>
+        <div class="nic-number">8 8 1 2 3 4 5 6 7 V</div>
+        <div class="nic-fields">
+          <div class="nic-field"><div class="nic-field-l">Date of Birth</div><div class="nic-field-v">02 May 1988</div></div>
+          <div class="nic-field"><div class="nic-field-l">Gender</div><div class="nic-field-v gold">Male</div></div>
+          <div class="nic-field"><div class="nic-field-l">Format</div><div class="nic-field-v">Old (9+V)</div></div>
+          <div class="nic-field"><div class="nic-field-l">Age</div><div class="nic-field-v gold">36</div></div>
+        </div>
+        <div class="nic-valid">✓ Valid NIC Number</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section id="features">
+  <div class="section-inner">
+    <div class="fade-up">
+      <div class="section-tag">Features</div>
+      <h2>Everything you need for<br/><em>identity validation</em></h2>
+      <p class="section-sub">Built specifically for Sri Lankan businesses. Simple REST API, zero external dependencies.</p>
+    </div>
+    <div class="features-grid fade-up" style="transition-delay:0.1s">
+      <div class="feat"><div class="feat-icon">🔍</div><h3>Dual Format Support</h3><p>Validates both old 9-digit (+V/X) and new 12-digit NIC formats. Auto-detects the format on every request without any configuration needed.</p></div>
+      <div class="feat"><div class="feat-icon">📅</div><h3>DOB Extraction</h3><p>Accurately decodes the date of birth encoded within any NIC. Handles leap years, both gender offsets, and the official encoding standard correctly.</p></div>
+      <div class="feat"><div class="feat-icon">⚧</div><h3>Gender Detection</h3><p>Dedicated <code style="font-family:'DM Mono',monospace;font-size:12px;background:var(--bg3);color:var(--gold-l);padding:2px 5px;border-radius:3px">/gender</code> endpoint for fast, lightweight gender extraction without full validation overhead.</p></div>
+      <div class="feat"><div class="feat-icon">✅</div><h3>KYC Verification</h3><p>Cross-check a NIC against a user-provided date of birth to confirm identity. Returns a clear match/mismatch — ideal for onboarding flows.</p></div>
+      <div class="feat"><div class="feat-icon">🔐</div><h3>API Key Auth</h3><p>Per-business API key authentication. Register in seconds — no manual approval. Keys are generated instantly and scoped to your account.</p></div>
+      <div class="feat"><div class="feat-icon">⚡</div><h3>Fast & Reliable</h3><p>Sub-20ms responses with no external database calls for validation logic. Standard REST with JSON — works with any language or framework.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- DOCS -->
+<section id="docs" class="docs-section">
+  <div class="section-inner">
+    <div class="fade-up">
+      <div class="section-tag">Documentation</div>
+      <h2>API <em>Reference</em></h2>
+      <p class="section-sub">All endpoints accept and return JSON. Include your key in every request as the <code style="font-family:'DM Mono',monospace;background:var(--bg3);color:var(--gold-l);padding:2px 6px;border-radius:3px;font-size:13px">X-API-Key</code> header.</p>
+    </div>
+    <div class="endpoints-list fade-up" style="transition-delay:0.1s">
+
+      <!-- /keys/register -->
+      <div class="endpoint open">
+        <div class="endpoint-header" onclick="this.parentElement.classList.toggle('open')">
+          <span class="method post">POST</span><span class="endpoint-path">/keys/register</span>
+          <span class="endpoint-desc">Generate a new API key for your business</span><span class="ep-chevron">▾</span>
+        </div>
+        <div class="endpoint-body">
+          <p class="ep-desc-text">Register your business and receive a free API key instantly. No approval required. The key is shown only once — store it securely. Free plan includes 200 requests per month.</p>
+          <table class="params-table">
+            <thead><tr><th>Parameter</th><th>Type</th><th>Required</th><th>Description</th></tr></thead>
+            <tbody>
+              <tr><td>name</td><td>string</td><td><span class="req-badge">required</span></td><td>Your name or business contact name</td></tr>
+              <tr><td>email</td><td>string</td><td><span class="req-badge">required</span></td><td>Business email — used as unique identifier</td></tr>
+            </tbody>
+          </table>
+          <div class="code-wrapper">
+            <div class="code-header"><div class="code-tabs" id="t-reg"><button class="code-tab active" onclick="sw('t-reg','p-reg',0)">cURL</button><button class="code-tab" onclick="sw('t-reg','p-reg',1)">Python</button><button class="code-tab" onclick="sw('t-reg','p-reg',2)">Node.js</button><button class="code-tab" onclick="sw('t-reg','p-reg',3)">PHP</button></div><button class="copy-code" onclick="cp('p-reg')">Copy</button></div>
+            <div id="p-reg">
+<div class="code-panel active"><pre><span class="kw">curl</span> <span class="fn">-X POST</span> https://api.lankanicapi.lk/keys/register \
+  <span class="fn">-H</span> <span class="str">"Content-Type: application/json"</span> \
+  <span class="fn">-d</span> <span class="str">'{"name":"Kamal Perera","email":"kamal@company.lk"}'</span>
+
+<span class="cm"># Response</span>
+{ <span class="prop">"api_key"</span>: <span class="str">"lnic_xxxxxxxxxxxxxxxxxxxx"</span>, <span class="prop">"plan"</span>: <span class="str">"free"</span>, <span class="prop">"monthly_limit"</span>: <span class="num">200</span> }</pre></div>
+<div class="code-panel"><pre><span class="kw">import</span> requests
+res = requests.<span class="fn">post</span>(<span class="str">"https://api.lankanicapi.lk/keys/register"</span>,
+    json={<span class="str">"name"</span>:<span class="str">"Kamal Perera"</span>,<span class="str">"email"</span>:<span class="str">"kamal@company.lk"</span>})
+api_key = res.<span class="fn">json</span>()[<span class="str">"api_key"</span>]</pre></div>
+<div class="code-panel"><pre><span class="kw">const</span> res = <span class="kw">await</span> <span class="fn">fetch</span>(<span class="str">"https://api.lankanicapi.lk/keys/register"</span>, {
+  method:<span class="str">"POST"</span>, headers:{<span class="str">"Content-Type"</span>:<span class="str">"application/json"</span>},
+  body:<span class="fn">JSON.stringify</span>({name:<span class="str">"Kamal Perera"</span>,email:<span class="str">"kamal@company.lk"</span>})});
+<span class="kw">const</span> {api_key} = <span class="kw">await</span> res.<span class="fn">json</span>();</pre></div>
+<div class="code-panel"><pre><span class="kw">$r</span>=json_decode(file_get_contents(<span class="str">'https://api.lankanicapi.lk/keys/register'</span>,false,
+  stream_context_create([<span class="str">'http'</span>=>[<span class="str">'method'</span>=><span class="str">'POST'</span>,<span class="str">'header'</span>=><span class="str">'Content-Type: application/json'</span>,
+  <span class="str">'content'</span>=>json_encode([<span class="str">'name'</span>=><span class="str">'Kamal'</span>,<span class="str">'email'</span>=><span class="str">'kamal@company.lk'</span>])]])),true);
+<span class="kw">$key</span>=$r[<span class="str">'api_key'</span>];</pre></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- /validate -->
+      <div class="endpoint">
+        <div class="endpoint-header" onclick="this.parentElement.classList.toggle('open')">
+          <span class="method post">POST</span><span class="endpoint-path">/validate</span>
+          <span class="endpoint-desc">Validate NIC · extract DOB, gender & age</span><span class="ep-chevron">▾</span>
+        </div>
+        <div class="endpoint-body">
+          <p class="ep-desc-text">Full NIC validation. Returns validity, date of birth, gender, age, and format. Supports both old (9+V/X) and new (12-digit) formats.</p>
+          <table class="params-table">
+            <thead><tr><th>Parameter</th><th>Type</th><th>Required</th><th>Description</th></tr></thead>
+            <tbody><tr><td>nic</td><td>string</td><td><span class="req-badge">required</span></td><td>Old format e.g. <code style="font-family:'DM Mono',monospace;font-size:11px">881234567V</code> or new format e.g. <code style="font-family:'DM Mono',monospace;font-size:11px">198812345678</code></td></tr></tbody>
+          </table>
+          <div class="code-wrapper">
+            <div class="code-header"><div class="code-tabs" id="t-val"><button class="code-tab active" onclick="sw('t-val','p-val',0)">cURL</button><button class="code-tab" onclick="sw('t-val','p-val',1)">Python</button><button class="code-tab" onclick="sw('t-val','p-val',2)">Node.js</button><button class="code-tab" onclick="sw('t-val','p-val',3)">PHP</button></div><button class="copy-code" onclick="cp('p-val')">Copy</button></div>
+            <div id="p-val">
+<div class="code-panel active"><pre><span class="kw">curl</span> <span class="fn">-X POST</span> https://api.lankanicapi.lk/validate \
+  <span class="fn">-H</span> <span class="str">"Content-Type: application/json"</span> \
+  <span class="fn">-H</span> <span class="str">"X-API-Key: lnic_your_key_here"</span> \
+  <span class="fn">-d</span> <span class="str">'{"nic":"881234567V"}'</span>
+
+<span class="cm"># ✓ Valid response</span>
+{ <span class="prop">"valid"</span>:<span class="kw">true</span>, <span class="prop">"nic"</span>:<span class="str">"881234567V"</span>, <span class="prop">"format"</span>:<span class="str">"old"</span>,
+  <span class="prop">"date_of_birth"</span>:<span class="str">"1988-05-02"</span>, <span class="prop">"gender"</span>:<span class="str">"Male"</span>, <span class="prop">"age"</span>:<span class="num">36</span> }
+
+<span class="cm"># ✗ Invalid response</span>
+{ <span class="prop">"valid"</span>:<span class="kw">false</span>, <span class="prop">"error"</span>:<span class="str">"Invalid NIC format..."</span> }</pre></div>
+<div class="code-panel"><pre><span class="kw">import</span> requests
+<span class="kw">def</span> <span class="fn">validate_nic</span>(nic, api_key):
+    res = requests.<span class="fn">post</span>(<span class="str">"https://api.lankanicapi.lk/validate"</span>,
+        headers={<span class="str">"X-API-Key"</span>:api_key}, json={<span class="str">"nic"</span>:nic})
+    data = res.<span class="fn">json</span>()
+    <span class="kw">if</span> data[<span class="str">"valid"</span>]:
+        <span class="fn">print</span>(<span class="str">f"DOB:{data['date_of_birth']} Gender:{data['gender']} Age:{data['age']}"</span>)
+<span class="fn">validate_nic</span>(<span class="str">"881234567V"</span>, <span class="str">"lnic_your_key"</span>)</pre></div>
+<div class="code-panel"><pre><span class="kw">const</span> res = <span class="kw">await</span> <span class="fn">fetch</span>(<span class="str">"https://api.lankanicapi.lk/validate"</span>, {
+  method:<span class="str">"POST"</span>,
+  headers:{<span class="str">"Content-Type"</span>:<span class="str">"application/json"</span>,<span class="str">"X-API-Key"</span>:apiKey},
+  body:<span class="fn">JSON.stringify</span>({nic:<span class="str">"881234567V"</span>})});
+<span class="kw">const</span> {valid,date_of_birth,gender,age} = <span class="kw">await</span> res.<span class="fn">json</span>();</pre></div>
+<div class="code-panel"><pre><span class="kw">$r</span>=json_decode(file_get_contents(<span class="str">'https://api.lankanicapi.lk/validate'</span>,false,
+  stream_context_create([<span class="str">'http'</span>=>[<span class="str">'method'</span>=><span class="str">'POST'</span>,
+  <span class="str">'header'</span>=><span class="str">"Content-Type: application/json\r\nX-API-Key: "</span>.<span class="kw">$key</span>,
+  <span class="str">'content'</span>=>json_encode([<span class="str">'nic'</span>=><span class="str">'881234567V'</span>])]])),true);</pre></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- /gender -->
+      <div class="endpoint">
+        <div class="endpoint-header" onclick="this.parentElement.classList.toggle('open')">
+          <span class="method post">POST</span><span class="endpoint-path">/gender</span>
+          <span class="endpoint-desc">Lightweight — extract gender only from a NIC</span><span class="ep-chevron">▾</span>
+        </div>
+        <div class="endpoint-body">
+          <p class="ep-desc-text">A lightweight endpoint that extracts only the gender encoded in the NIC without performing full date-of-birth calculation. Use this when you only need gender — it's faster and consumes fewer resources.</p>
+          <table class="params-table">
+            <thead><tr><th>Parameter</th><th>Type</th><th>Required</th><th>Description</th></tr></thead>
+            <tbody><tr><td>nic</td><td>string</td><td><span class="req-badge">required</span></td><td>Any valid Sri Lankan NIC — old or new format</td></tr></tbody>
+          </table>
+          <div class="code-wrapper">
+            <div class="code-header"><div class="code-tabs" id="t-gen"><button class="code-tab active" onclick="sw('t-gen','p-gen',0)">cURL</button><button class="code-tab" onclick="sw('t-gen','p-gen',1)">Python</button><button class="code-tab" onclick="sw('t-gen','p-gen',2)">Node.js</button><button class="code-tab" onclick="sw('t-gen','p-gen',3)">PHP</button></div><button class="copy-code" onclick="cp('p-gen')">Copy</button></div>
+            <div id="p-gen">
+<div class="code-panel active"><pre><span class="kw">curl</span> <span class="fn">-X POST</span> https://api.lankanicapi.lk/gender \
+  <span class="fn">-H</span> <span class="str">"Content-Type: application/json"</span> \
+  <span class="fn">-H</span> <span class="str">"X-API-Key: lnic_your_key_here"</span> \
+  <span class="fn">-d</span> <span class="str">'{"nic":"881234567V"}'</span>
+
+<span class="cm"># Response</span>
+{ <span class="prop">"valid"</span>:<span class="kw">true</span>, <span class="prop">"nic"</span>:<span class="str">"881234567V"</span>, <span class="prop">"format"</span>:<span class="str">"old"</span>, <span class="prop">"gender"</span>:<span class="str">"Male"</span> }
+
+<span class="cm"># New format female example</span>
+<span class="kw">curl</span> ... <span class="fn">-d</span> <span class="str">'{"nic":"200068700123"}'</span>
+{ <span class="prop">"valid"</span>:<span class="kw">true</span>, <span class="prop">"nic"</span>:<span class="str">"200068700123"</span>, <span class="prop">"format"</span>:<span class="str">"new"</span>, <span class="prop">"gender"</span>:<span class="str">"Female"</span> }</pre></div>
+<div class="code-panel"><pre><span class="kw">import</span> requests
+<span class="kw">def</span> <span class="fn">get_gender</span>(nic, api_key):
+    res = requests.<span class="fn">post</span>(<span class="str">"https://api.lankanicapi.lk/gender"</span>,
+        headers={<span class="str">"X-API-Key"</span>:api_key}, json={<span class="str">"nic"</span>:nic})
+    data = res.<span class="fn">json</span>()
+    <span class="kw">return</span> data[<span class="str">"gender"</span>]  <span class="cm"># "Male" or "Female"</span>
+
+gender = <span class="fn">get_gender</span>(<span class="str">"881234567V"</span>, <span class="str">"lnic_your_key"</span>)
+<span class="fn">print</span>(gender)  <span class="cm"># Male</span></pre></div>
+<div class="code-panel"><pre><span class="kw">async function</span> <span class="fn">getGender</span>(nic, apiKey) {
+  <span class="kw">const</span> res = <span class="kw">await</span> <span class="fn">fetch</span>(<span class="str">"https://api.lankanicapi.lk/gender"</span>, {
+    method:<span class="str">"POST"</span>,
+    headers:{<span class="str">"Content-Type"</span>:<span class="str">"application/json"</span>,<span class="str">"X-API-Key"</span>:apiKey},
+    body:<span class="fn">JSON.stringify</span>({nic})
+  });
+  <span class="kw">const</span> {gender} = <span class="kw">await</span> res.<span class="fn">json</span>();
+  <span class="kw">return</span> gender; <span class="cm">// "Male" or "Female"</span>
+}</pre></div>
+<div class="code-panel"><pre><span class="kw">function</span> getGender(<span class="kw">$nic</span>,<span class="kw">$key</span>) {
+  <span class="kw">$r</span>=json_decode(file_get_contents(<span class="str">'https://api.lankanicapi.lk/gender'</span>,false,
+    stream_context_create([<span class="str">'http'</span>=>[<span class="str">'method'</span>=><span class="str">'POST'</span>,
+    <span class="str">'header'</span>=><span class="str">"Content-Type: application/json\r\nX-API-Key: "</span>.<span class="kw">$key</span>,
+    <span class="str">'content'</span>=>json_encode([<span class="str">'nic'</span>=><span class="kw">$nic</span>])]])),true);
+  <span class="kw">return</span> <span class="kw">$r</span>[<span class="str">'gender'</span>]; <span class="cm">// "Male" or "Female"</span>
+}</pre></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- /verify -->
+      <div class="endpoint">
+        <div class="endpoint-header" onclick="this.parentElement.classList.toggle('open')">
+          <span class="method post">POST</span><span class="endpoint-path">/verify</span>
+          <span class="endpoint-desc">Verify NIC matches a date of birth — KYC</span><span class="ep-chevron">▾</span>
+        </div>
+        <div class="endpoint-body">
+          <p class="ep-desc-text">Cross-checks the DOB encoded in a NIC against a date provided by the user. Returns <code>match: true</code> or <code>match: false</code>. Designed for customer KYC and onboarding flows.</p>
+          <table class="params-table">
+            <thead><tr><th>Parameter</th><th>Type</th><th>Required</th><th>Description</th></tr></thead>
+            <tbody>
+              <tr><td>nic</td><td>string</td><td><span class="req-badge">required</span></td><td>The NIC number to verify</td></tr>
+              <tr><td>date_of_birth</td><td>string</td><td><span class="req-badge">required</span></td><td>Date in <code style="font-family:'DM Mono',monospace;font-size:11px">YYYY-MM-DD</code> format</td></tr>
+            </tbody>
+          </table>
+          <div class="code-wrapper">
+            <div class="code-header"><div class="code-tabs" id="t-ver"><button class="code-tab active" onclick="sw('t-ver','p-ver',0)">cURL</button><button class="code-tab" onclick="sw('t-ver','p-ver',1)">Python</button><button class="code-tab" onclick="sw('t-ver','p-ver',2)">Node.js</button></div><button class="copy-code" onclick="cp('p-ver')">Copy</button></div>
+            <div id="p-ver">
+<div class="code-panel active"><pre><span class="kw">curl</span> <span class="fn">-X POST</span> https://api.lankanicapi.lk/verify \
+  <span class="fn">-H</span> <span class="str">"Content-Type: application/json"</span> \
+  <span class="fn">-H</span> <span class="str">"X-API-Key: lnic_your_key_here"</span> \
+  <span class="fn">-d</span> <span class="str">'{"nic":"881234567V","date_of_birth":"1988-05-02"}'</span>
+
+<span class="cm"># Response</span>
+{ <span class="prop">"nic"</span>:<span class="str">"881234567V"</span>, <span class="prop">"match"</span>:<span class="kw">true</span>,
+  <span class="prop">"nic_date_of_birth"</span>:<span class="str">"1988-05-02"</span>, <span class="prop">"provided_date_of_birth"</span>:<span class="str">"1988-05-02"</span>,
+  <span class="prop">"gender"</span>:<span class="str">"Male"</span>, <span class="prop">"age"</span>:<span class="num">36</span> }</pre></div>
+<div class="code-panel"><pre><span class="kw">def</span> <span class="fn">verify_nic</span>(nic, dob, api_key):
+    res = requests.<span class="fn">post</span>(<span class="str">"https://api.lankanicapi.lk/verify"</span>,
+        headers={<span class="str">"X-API-Key"</span>:api_key},
+        json={<span class="str">"nic"</span>:nic,<span class="str">"date_of_birth"</span>:dob})
+    <span class="kw">return</span> res.<span class="fn">json</span>()[<span class="str">"match"</span>]  <span class="cm"># True or False</span></pre></div>
+<div class="code-panel"><pre><span class="kw">const</span> res = <span class="kw">await</span> <span class="fn">fetch</span>(<span class="str">"https://api.lankanicapi.lk/verify"</span>, {
+  method:<span class="str">"POST"</span>,
+  headers:{<span class="str">"Content-Type"</span>:<span class="str">"application/json"</span>,<span class="str">"X-API-Key"</span>:apiKey},
+  body:<span class="fn">JSON.stringify</span>({nic:<span class="str">"881234567V"</span>,date_of_birth:<span class="str">"1988-05-02"</span>})});
+<span class="kw">const</span> {match} = <span class="kw">await</span> res.<span class="fn">json</span>(); <span class="cm">// true or false</span></pre></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- /keys/status -->
+      <div class="endpoint">
+        <div class="endpoint-header" onclick="this.parentElement.classList.toggle('open')">
+          <span class="method get">GET</span><span class="endpoint-path">/keys/status</span>
+          <span class="endpoint-desc">Check API key usage and remaining quota</span><span class="ep-chevron">▾</span>
+        </div>
+        <div class="endpoint-body">
+          <p class="ep-desc-text">Returns usage statistics for your key — requests used, monthly limit, quota remaining, and last used timestamp.</p>
+          <div class="code-wrapper">
+            <div class="code-header"><div class="code-tabs" id="t-stat"><button class="code-tab active" onclick="sw('t-stat','p-stat',0)">cURL</button><button class="code-tab" onclick="sw('t-stat','p-stat',1)">Python</button></div><button class="copy-code" onclick="cp('p-stat')">Copy</button></div>
+            <div id="p-stat">
+<div class="code-panel active"><pre><span class="kw">curl</span> https://api.lankanicapi.lk/keys/status \
+  <span class="fn">-H</span> <span class="str">"X-API-Key: lnic_your_key_here"</span>
+
+{ <span class="prop">"plan"</span>:<span class="str">"free"</span>, <span class="prop">"request_count"</span>:<span class="num">47</span>, <span class="prop">"monthly_limit"</span>:<span class="num">200</span>, <span class="prop">"remaining"</span>:<span class="num">153</span> }</pre></div>
+<div class="code-panel"><pre>res = requests.<span class="fn">get</span>(<span class="str">"https://api.lankanicapi.lk/keys/status"</span>,
+    headers={<span class="str">"X-API-Key"</span>:<span class="str">"lnic_your_key"</span>})
+s = res.<span class="fn">json</span>()
+<span class="fn">print</span>(<span class="str">f"Used {s['request_count']} of {s['monthly_limit']}"</span>)</pre></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- PRICING — 2 cards -->
+<section id="pricing">
+  <div class="section-inner">
+    <div class="fade-up" style="text-align:center">
+      <div class="section-tag" style="justify-content:center">Pricing</div>
+      <h2>Simple, <em>transparent</em> pricing</h2>
+      <p class="section-sub" style="margin:0 auto">Start free. Scale to Enterprise when you're ready. No credit card required to begin.</p>
+    </div>
+    <div class="pricing-grid fade-up" style="transition-delay:0.1s">
+      <div class="price-card">
+        <div class="plan-name">Free</div>
+        <div class="plan-price">$0<span> / mo</span></div>
+        <p class="plan-desc">For developers and small applications exploring the API. No commitment, no credit card.</p>
+        <ul class="plan-features">
+          <li>200 requests / month</li>
+          <li>All 3 endpoints (validate, gender, verify)</li>
+          <li>Both NIC formats supported</li>
+          <li>Basic request logging</li>
+          <li class="dim">Priority support</li>
+          <li class="dim">Uptime SLA</li>
+        </ul>
+        <a class="btn-plan" href="#register">Get Started Free</a>
+      </div>
+      <div class="price-card featured">
+        <div class="plan-name">Enterprise</div>
+        <div class="plan-price" style="font-size:38px;line-height:1.2;padding-top:4px">Custom</div>
+        <p class="plan-desc">For banks, fintechs, telcos, and high-volume platforms that require scale, reliability, and compliance.</p>
+        <ul class="plan-features">
+          <li>Unlimited requests — no caps</li>
+          <li>All endpoints + priority access to new features</li>
+          <li>99.9% uptime SLA with financial credits</li>
+          <li>Dedicated infrastructure</li>
+          <li>Priority phone & email support</li>
+          <li>On-premise deployment option</li>
+        </ul>
+        <button class="btn-plan featured-btn" onclick="openPopup()">Contact Us →</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- REGISTER -->
+<section id="register" class="register-section">
+  <div class="section-inner">
+    <div class="register-grid">
+      <div class="fade-up">
+        <div class="section-tag">Get Access</div>
+        <h2>Start validating<br/><em>today</em></h2>
+        <p class="section-sub">Register your business and receive your API key instantly. Free plan includes 200 requests per month — no credit card required.</p>
+        <div class="register-perks">
+          <div class="perk"><div class="perk-icon">⚡</div><div><h4>Instant key delivery</h4><p>Your API key is generated and shown immediately on registration. No approval process.</p></div></div>
+          <div class="perk"><div class="perk-icon">🔒</div><div><h4>Secure by default</h4><p>Keys are shown only once and stored securely. Save yours immediately after generation.</p></div></div>
+          <div class="perk"><div class="perk-icon">📈</div><div><h4>Upgrade when ready</h4><p>Start free and move to Enterprise as your business grows — no disruption to service.</p></div></div>
+        </div>
+      </div>
+      <div class="fade-up" style="transition-delay:0.1s">
+        <div class="reg-form">
+          <div id="reg-form-inner">
+            <div class="form-row">
+              <div class="field"><label>Your Name</label><input type="text" id="r-name" placeholder="Kamal Perera"/></div>
+              <div class="field"><label>Business Name</label><input type="text" id="r-biz" placeholder="My Company (Pvt) Ltd"/></div>
+            </div>
+            <div class="field"><label>Business Email</label><input type="email" id="r-email" placeholder="kamal@mycompany.lk"/></div>
+            <div class="field">
+              <label>Industry</label>
+              <select id="r-industry">
+                <option value="" disabled selected>Select your industry</option>
+                <option>Banking &amp; Finance</option><option>Insurance</option><option>E-Commerce</option>
+                <option>Telecommunications</option><option>Healthcare</option>
+                <option>Government / Public Sector</option><option>Software / SaaS</option><option>Other</option>
+              </select>
+            </div>
+            <div class="field"><label>Intended Use Case</label><textarea id="r-usecase" placeholder="e.g. Customer onboarding KYC, age verification for our platform..."></textarea></div>
+            <button class="btn-submit" onclick="doRegister()" id="reg-submit">Get My Free API Key →</button>
+            <p class="form-note">By registering you agree to our Terms of Service.<br/>Free plan: 200 requests/month · No credit card required.</p>
+          </div>
+          <div id="reg-success">
+            <div class="success-icon">✅</div>
+            <h4>You're all set!</h4>
+            <p>Your API key has been generated. Copy it now — it won't be shown again.</p>
+            <div class="key-reveal"><code id="success-key"></code><button class="copy-btn-sm" onclick="copyKey()">Copy</button></div>
+            <p style="font-size:12px;color:var(--muted);margin-top:20px;font-family:'DM Mono',monospace">Next step: <a href="/dashboard" style="color:var(--gold);text-decoration:none">Open the test dashboard →</a></p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section id="faq">
+  <div class="section-inner">
+    <div class="fade-up" style="max-width:700px;margin:0 auto;text-align:center">
+      <div class="section-tag" style="justify-content:center">FAQ</div>
+      <h2>Frequently asked <em>questions</em></h2>
+    </div>
+    <div class="faq-list fade-up" style="max-width:700px;margin:64px auto 0;transition-delay:0.1s">
+      <div class="faq-item">
+        <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">What NIC formats are supported?<span class="faq-chevron">▾</span></div>
+        <div class="faq-a">Both formats are fully supported. The <strong>old format</strong> is 9 digits followed by V or X (e.g. <code>881234567V</code>), issued before 2016. The <strong>new format</strong> is 12 digits (e.g. <code>198812345678</code>), issued from 2016 onwards. The API detects the format automatically.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">What is the difference between /validate and /gender?<span class="faq-chevron">▾</span></div>
+        <div class="faq-a"><code>/validate</code> performs a full decode of the NIC — it returns date of birth, gender, age, and format. <code>/gender</code> is a lightweight endpoint that returns only the gender, which is slightly faster and more efficient when that's all you need. Both count equally toward your monthly quota.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">How accurate is the date of birth extraction?<span class="faq-chevron">▾</span></div>
+        <div class="faq-a">100% accurate and deterministic. The NIC directly encodes the year, day-of-year, and gender using the official Sri Lankan standard. Our implementation correctly handles leap years, the female gender offset of 500, and all edge cases in the encoding.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">Does the API store the NIC numbers I send?<span class="faq-chevron">▾</span></div>
+        <div class="faq-a">NIC numbers are stored in request logs for debugging and analytics, retained for 30 days and tied to your API key. If your compliance requirements prohibit this, <a href="#" onclick="openPopup()">contact our Enterprise team</a> for a zero data retention or on-premise option.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">What does the free plan's 200 request limit mean?<span class="faq-chevron">▾</span></div>
+        <div class="faq-a">Each call to any API endpoint counts as one request. The free plan allows up to 200 total requests. This is ideal for development, testing, or low-volume use cases. If you need more, <a href="#" onclick="openPopup()">reach out about our Enterprise plan</a> for unlimited access.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">What if I lose my API key?<span class="faq-chevron">▾</span></div>
+        <div class="faq-a">API keys are shown only once at registration for security. If you lose yours, email <code>support@lankanicapi.lk</code> from your registered address. We'll revoke the old key and issue a new one — your plan and usage history will be preserved.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">Can this be used for KYC / AML compliance?<span class="faq-chevron">▾</span></div>
+        <div class="faq-a">Yes. The <code>/verify</code> endpoint is designed for this — it confirms whether a NIC matches a provided date of birth. Note that this validates NIC structure and encoded data only; it does not query government databases. For full AML compliance, combine this with your existing document verification processes.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-inner">
+    <div class="footer-brand">
+      <a class="logo" href="#"><div class="logo-icon">🦁</div>Lanka NIC API</a>
+      <p>Production-ready NIC validation for Sri Lankan businesses. Simple, fast, and reliable.</p>
+    </div>
+    <div class="footer-col">
+      <h5>Product</h5>
+      <a href="#features">Features</a><a href="#docs">Documentation</a>
+      <a href="#pricing">Pricing</a><a href="/dashboard">Dashboard</a>
+    </div>
+    <div class="footer-col">
+      <h5>Developers</h5>
+      <a href="#docs">API Reference</a><a href="/docs">Swagger UI</a>
+      <a href="#faq">FAQ</a><a href="mailto:support@lankanicapi.lk">Support</a>
+    </div>
+    <div class="footer-col">
+      <h5>Company</h5>
+      <a href="#">About</a><a href="#">Privacy Policy</a>
+      <a href="#">Terms of Service</a><a href="#" onclick="openPopup();return false;">Enterprise</a>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <p>© 2025 Lanka NIC API · Built in Sri Lanka 🇱🇰</p>
+    <p>All rights reserved.</p>
+  </div>
+</footer>
+
+<script>
+// Fade-in on scroll
+const obs = new IntersectionObserver(e=>e.forEach(x=>{if(x.isIntersecting)x.target.classList.add('visible')}),{threshold:0.1});
+document.querySelectorAll('.fade-up').forEach(el=>obs.observe(el));
+
+// Nav highlight
+window.addEventListener('scroll',()=>{
+  let cur='';
+  ['features','docs','pricing','register','faq'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el&&window.scrollY>=el.offsetTop-100)cur=id;
+  });
+  document.querySelectorAll('.nav-link').forEach(a=>a.classList.toggle('active',a.getAttribute('href')==='#'+cur));
+});
+
+// Code tabs
+function sw(tabsId,panelsId,idx){
+  document.getElementById(tabsId).querySelectorAll('.code-tab').forEach((t,i)=>t.classList.toggle('active',i===idx));
+  document.getElementById(panelsId).querySelectorAll('.code-panel').forEach((p,i)=>p.classList.toggle('active',i===idx));
+}
+function cp(panelsId){
+  navigator.clipboard.writeText(document.getElementById(panelsId).querySelector('.code-panel.active pre').innerText);
+  event.target.textContent='Copied!';setTimeout(()=>event.target.textContent='Copy',2000);
+}
+
+// Register
+async function doRegister(){
+  const name=document.getElementById('r-name').value.trim();
+  const email=document.getElementById('r-email').value.trim();
+  const btn=document.getElementById('reg-submit');
+  if(!name||!email){alert('Please enter your name and email.');return;}
+  btn.disabled=true;btn.textContent='Generating…';
+  try{
+    const res=await fetch('/keys/register',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name,email})});
+    const data=await res.json();
+    if(!res.ok){alert(data.detail||'Registration failed.');btn.disabled=false;btn.textContent='Get My Free API Key →';return;}
+    document.getElementById('reg-form-inner').style.display='none';
+    document.getElementById('success-key').textContent=data.api_key;
+    document.getElementById('reg-success').style.display='block';
+  }catch(e){alert('Cannot reach server. Make sure it is running.');btn.disabled=false;btn.textContent='Get My Free API Key →';}
+}
+function copyKey(){navigator.clipboard.writeText(document.getElementById('success-key').textContent);event.target.textContent='Copied!';setTimeout(()=>event.target.textContent='Copy',2000);}
+
+// Enterprise popup
+function openPopup(){document.getElementById('enterpriseOverlay').classList.add('open');}
+function closePopupBtn(){document.getElementById('enterpriseOverlay').classList.remove('open');}
+function closePopup(e){if(e.target===document.getElementById('enterpriseOverlay'))closePopupBtn();}
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closePopupBtn();});
+
+async function sendEnterprise(){
+  const name=document.getElementById('ent-name').value.trim();
+  const email=document.getElementById('ent-email').value.trim();
+  const btn=document.getElementById('ent-btn');
+  if(!name||!email){alert('Please enter your name and email.');return;}
+  btn.disabled=true;btn.textContent='Sending…';
+  // Simulate sending (replace with real endpoint when ready)
+  await new Promise(r=>setTimeout(r,1000));
+  document.getElementById('popup-email-confirm').textContent=email;
+  document.getElementById('popup-form-inner').style.display='none';
+  document.getElementById('popup-success').style.display='block';
+}
+</script>
+</body>
+</html>
